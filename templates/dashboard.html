@@ -1,0 +1,224 @@
+{% extends 'app.html' %}
+
+{% block content %}
+
+<div>
+    <aside>
+        <!-- This content will be in side bar-->
+        {% for message in get_flashed_messages() %}
+        <div class="alert alert-info">{{ message }}</div>
+        {% endfor %}
+      <h2>User Info</h2>
+      {% if user %}
+      <ul>
+        <li class="dropdown-item">Name: {{ user[1] }}</li>
+        <li class="dropdown-item">Email: {{ user[2] }}</li>
+        <a class="btn btn-primary" href="/logout" role="button">Log out</a>
+        <a class="btn btn-primary" href="/settings" role="button">settings</a>
+
+      </ul>
+      {% endif %}
+    </aside>
+    
+</div>
+<div class="container">
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <canvas id="canvas2"></canvas> <!-- New canvas for the second chart -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <canvas id="pieChartCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+<!--suppress JSUnresolvedLibraryURL -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+<!--suppress JSUnresolvedLibraryURL -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<!--suppress JSUnresolvedLibraryURL -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+<script>
+$(document).ready(function () {
+    
+    const config = {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: "Electricity",
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: [],
+                fill: false,
+            }],
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Creating Real-Time Charts with Flask'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Value'
+                    }
+                }]
+            }
+        }
+    };
+
+    const config2 = {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: "Water",
+                backgroundColor: 'rgb(54, 162, 235)',
+                borderColor: 'rgb(54, 162, 235)',
+                data: [],
+                fill: false,
+            }],
+        },
+        options: {
+            responsive: true,
+            title: {
+                display: true,
+                text: 'Creating Real-Time Charts with Flask'
+            },
+            tooltips: {
+                mode: 'index',
+                intersect: false,
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: true
+            },
+            scales: {
+                xAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Time'
+                    }
+                }],
+                yAxes: [{
+                    display: true,
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Value'
+                    }
+                }]
+            }
+        }
+    };
+
+    
+
+    
+
+ // Initialize line charts
+ const context = document.getElementById('canvas').getContext('2d');
+ const lineChart = new Chart(context, config); 
+
+ const context2 = document.getElementById('canvas2').getContext('2d');
+ const lineChart2 = new Chart(context2, config2);
+
+
+ // EventSource for the first line chart
+ const source = new EventSource("/chart-data");
+ source.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+    updateChartData(lineChart, data);
+ }
+
+ // EventSource for the second line chart
+ const source2 = new EventSource("/chart-data2");
+ source2.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+    updateChartData(lineChart2, data);
+ }
+
+
+
+ // Generic function to update chart data
+ function updateChartData(chart, data) {
+    if (chart.data.labels.length >= 20) {
+        chart.data.labels.shift();
+        chart.data.datasets.forEach((dataset) => {
+            dataset.data.shift();
+        });
+    }
+    chart.data.labels.push(data.time);
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.push(data.value);
+    });
+    chart.update();
+ }
+
+ // Setup and update the pie chart
+ const pieCtx = document.getElementById('pieChartCanvas').getContext('2d');
+ const pieChart = new Chart(pieCtx, {
+    type: 'pie',
+    data: {
+        labels: ['Electricity', 'Water'],
+        datasets: [{
+            backgroundColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)'],
+            data: [0, 0] // Initial data
+        }]
+    },
+    options: {
+        responsive: true,
+        title: {
+            display: true,
+            text: 'Real-Time Pie Chart'
+        },
+    }
+});
+
+const pieSource = new EventSource("/pie-chart-data");
+pieSource.onmessage = function (event) {
+    const data = JSON.parse(event.data);
+    pieChart.data.datasets[0].data = data.data;
+    pieChart.update();
+};
+});
+  
+
+</script>
+
+
+{% endblock %}
