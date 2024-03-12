@@ -125,34 +125,40 @@ def logout():
 #Dash board routing 
 @app.route('/dashboard')
 def dashboard():
-    if 'user_id' in session:
-        user_id = session['user_id']
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    user_id = session['user_id']
+    electricity_data_formatted = []
+    water_data_formatted = []
+
+    if request.method == 'POST':
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
 
         with mysql.connection.cursor() as cursor:
-            # Fetch user information
-            cursor.execute("SELECT * FROM user WHERE id=%s", (user_id,))
-            user = cursor.fetchone()
-
-            # Fetch electricity historical data for the user
             cursor.execute("""SELECT * FROM historical_data 
-                              WHERE user_id=%s AND type='electricity' 
-                              ORDER BY time DESC LIMIT 10""", (user_id,))
+                            WHERE user_id=%s AND type='electricity' 
+                            AND time BETWEEN %s AND %s
+                            ORDER BY time DESC""", (user_id, start_date, end_date))
             electricity_data = cursor.fetchall()
 
-            # Fetch water historical data for the user
             cursor.execute("""SELECT * FROM historical_data 
-                              WHERE user_id=%s AND type='water' 
-                              ORDER BY time DESC LIMIT 10""", (user_id,))
+                            WHERE user_id=%s AND type='water' 
+                            AND time BETWEEN %s AND %s
+                            ORDER BY time DESC""", (user_id, start_date, end_date))
             water_data = cursor.fetchall()
 
-        # Assuming indices: 0 - ID, 1 - user_id, 2 - value, 3 - data_type, 4 - timestamp
-        electricity_data_formatted = [{'time': row[4].strftime('%Y-%m-%d %H:%M:%S'), 'value': row[3]} for row in electricity_data]
-        water_data_formatted = [{'time': row[4].strftime('%Y-%m-%d %H:%M:%S'), 'value': row[3]} for row in water_data]
+            # Assuming indices: 0 - ID, 1 - user_id, 2 - value, 3 - data_type, 4 - timestamp
+            electricity_data_formatted = [{'time': row[4].strftime('%Y-%m-%d %H:%M:%S'), 'value': row[3]} for row in electricity_data]
+            water_data_formatted = [{'time': row[4].strftime('%Y-%m-%d %H:%M:%S'), 'value': row[3]} for row in water_data]
 
-        if user:
-            return render_template('dashboard.html', user=user, electricity_data=electricity_data_formatted, water_data=water_data_formatted)
+    # Fetch user information for initial GET request or keep after POST
+    with mysql.connection.cursor() as cursor:
+        cursor.execute("SELECT * FROM user WHERE id=%s", (user_id,))
+        user = cursor.fetchone()
 
-    return redirect(url_for('login'))
+    return render_template('dashboard.html', user=user, electricity_data=electricity_data_formatted, water_data=water_data_formatted)
 
 def generate_random_data_electricity():
     while True:
@@ -230,7 +236,7 @@ def settings():
         mysql.connection.commit()
         flash('Threshold settings updated successfully.')
         return redirect(url_for('dashboard'))
-    cursor.execute("SELECT electricity_threshold, water_threshold, gas_threshold FROM user WHERE id=%s", (user_id,))
+    cursor.execute("SELECT electricity_threshold, water_threshold FROM user WHERE id=%s", (user_id,))
     thresholds = cursor.fetchone()
     cursor.close()
     return render_template('settings.html', thresholds=thresholds)

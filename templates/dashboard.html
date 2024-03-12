@@ -19,36 +19,26 @@
       </ul>
       {% endif %}
     </aside>
-    <!-- Display historical electricity data -->
-<h2>Electricity Usage History</h2>
-<table>
-    <tr>
-        <th>Time</th>
-        <th>Value (kWh)</th>
-    </tr>
-    {% for data in electricity_data %}
-    <tr>
-        <td>{{ data.time }}</td>
-        <td>{{ data.value }}</td>
-    </tr>
-    {% endfor %}
-</table>
+    
+    
+    
+    <!-- Display historical  data -->
+    <div class="container">
+        <h5>Historical data</h5>
+        <p>Pick Range :</p>
+        <form class="form-inline" action="/dashboard" method='post'>
+          <label for="start_date">Start Date:</label>
+          <input type="date" class="form-control" id="start_date" placeholder="Enter the starting date" name="start_date" required>
+          
+          <label for="end_date">End Date:</label>
+          <input type="date" class="form-control" id="end_date" placeholder="Enter the ending date" name="end_date" required>
+          
+          <button type="submit" class="btn btn-primary">Show History</button>
+        </form>
+      </div>
 
-<!-- Display historical water data -->
-<h2>Water Usage History</h2>
-<table>
-    <tr>
-        <th>Time</th>
-        <th>Value (Liters)</th>
-    </tr>
-    {% for data in water_data %}
-    <tr>
-        <td>{{ data.time }}</td>
-        <td>{{ data.value }}</td>
-    </tr>
-    {% endfor %}
-</table>
-
+      
+    
     
 </div>
 <div class="container">
@@ -83,7 +73,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <!--suppress JSUnresolvedLibraryURL -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
+
 <script>
+    
 $(document).ready(function () {
     
     const config = {
@@ -247,6 +239,8 @@ pieSource.onmessage = function (event) {
 };
 });
   
+
+
 
 </script>
 
