@@ -19,6 +19,36 @@
       </ul>
       {% endif %}
     </aside>
+    <!-- Display historical electricity data -->
+<h2>Electricity Usage History</h2>
+<table>
+    <tr>
+        <th>Time</th>
+        <th>Value (kWh)</th>
+    </tr>
+    {% for data in electricity_data %}
+    <tr>
+        <td>{{ data.time }}</td>
+        <td>{{ data.value }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<!-- Display historical water data -->
+<h2>Water Usage History</h2>
+<table>
+    <tr>
+        <th>Time</th>
+        <th>Value (Liters)</th>
+    </tr>
+    {% for data in water_data %}
+    <tr>
+        <td>{{ data.time }}</td>
+        <td>{{ data.value }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
     
 </div>
 <div class="container">

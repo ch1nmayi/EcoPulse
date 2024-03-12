@@ -128,41 +128,65 @@ def dashboard():
     if 'user_id' in session:
         user_id = session['user_id']
 
-        cursor = mysql.connection.cursor()
-        cursor.execute("SELECT * FROM user where id=%s",(user_id,))
-        user = cursor.fetchone()
-        cursor.close()
+        with mysql.connection.cursor() as cursor:
+            # Fetch user information
+            cursor.execute("SELECT * FROM user WHERE id=%s", (user_id,))
+            user = cursor.fetchone()
+
+            # Fetch electricity historical data for the user
+            cursor.execute("""SELECT * FROM historical_data 
+                              WHERE user_id=%s AND type='electricity' 
+                              ORDER BY time DESC LIMIT 10""", (user_id,))
+            electricity_data = cursor.fetchall()
+
+            # Fetch water historical data for the user
+            cursor.execute("""SELECT * FROM historical_data 
+                              WHERE user_id=%s AND type='water' 
+                              ORDER BY time DESC LIMIT 10""", (user_id,))
+            water_data = cursor.fetchall()
+
+        # Assuming indices: 0 - ID, 1 - user_id, 2 - value, 3 - data_type, 4 - timestamp
+        electricity_data_formatted = [{'time': row[4].strftime('%Y-%m-%d %H:%M:%S'), 'value': row[3]} for row in electricity_data]
+        water_data_formatted = [{'time': row[4].strftime('%Y-%m-%d %H:%M:%S'), 'value': row[3]} for row in water_data]
 
         if user:
-            return render_template('dashboard.html',user=user)
-    
-            
+            return render_template('dashboard.html', user=user, electricity_data=electricity_data_formatted, water_data=water_data_formatted)
+
     return redirect(url_for('login'))
 
 def generate_random_data_electricity():
-    """Simulate real-time electricity data."""
     while True:
-        kWh = 28 + random.random() * 4  # Random value between 28 and 32
+        kWh = 28 + random.random() * 4
+        now = datetime.now()
+        cursor = mysql.connection.cursor()
+        cursor.execute("INSERT INTO historical_data (type, value, time) VALUES (%s, %s, %s)", ('electricity', kWh, now))
+        mysql.connection.commit()
+        cursor.close()
         json_data = json.dumps({
-            'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'time': now.strftime('%Y-%m-%d %H:%M:%S'),
             'value': kWh,
-            'alert': check_for_alerts(kWh,alert_threshold),  # Add comma here
+            'alert': check_for_alerts(kWh, alert_threshold),
         })
         yield f"data:{json_data}\n\n"
-        time.sleep(1)  # Update every second for demonstration purposes 
+        time.sleep(1)
+
 
 def generate_random_data_water():
-    """Simulate real-time water data."""
     while True:
-        liters = 300 + random.random() * 100  # Random value between 300 and 400
-        alert = check_for_alerts(liters, water_alert_threshold)  # Adjust check_for_alerts if necessary
+        liters = 300 + random.random() * 100
+        now = datetime.now()
+        cursor = mysql.connection.cursor()
+        cursor.execute("INSERT INTO historical_data (type, value, time) VALUES (%s, %s, %s)", ('water', liters, now))
+        mysql.connection.commit()
+        cursor.close()
         json_data = json.dumps({
-            'time': datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 
+            'time': now.strftime('%Y-%m-%d %H:%M:%S'),
             'value': liters,
-            'alert': check_for_alerts(liters,water_alert_threshold),
+            'alert': check_for_alerts(liters, alert_threshold),
         })
         yield f"data:{json_data}\n\n"
-        time.sleep(1)  # Update every hour
+        time.sleep(1)
+
 
 
 
@@ -210,6 +234,7 @@ def settings():
     thresholds = cursor.fetchone()
     cursor.close()
     return render_template('settings.html', thresholds=thresholds)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
