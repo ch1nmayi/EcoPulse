@@ -17,12 +17,7 @@
       {% endif %}
     </aside>
 
-    <div class="container">
-        <h1>Dashboard</h1>
-
-        <!-- Dashboard content goes here -->
-        <p>Welcome to your dashboard. Here you can view your electricity and water usage alerts.</p>
-    </div>
+    <div id="alertsContainer"></div>
     
     
     
@@ -177,6 +172,7 @@ $(document).ready(function () {
  // EventSource for the first line chart
  const source = new EventSource("/chart-data");
  source.onmessage = function (event) {
+    console.log(event.data);
     const data = JSON.parse(event.data);
     updateChartData(lineChart, data);
  }
@@ -204,7 +200,24 @@ $(document).ready(function () {
         dataset.data.push(data.value);
     });
     chart.update();
+
+    if (data.alert) {
+        displayAlert(data);
+    }
+
+
  }
+
+ function displayAlert(data) {
+    console.log("Displaying alert with data:", data);
+    const container = document.getElementById('alertsContainer');
+    const alertDiv = document.createElement('div');
+    alertDiv.classList.add('alert', 'alert-warning'); // Added alert-warning for Bootstrap styling
+    alertDiv.innerText = `Alert at ${data.time}: High ${data.label} usage detected!`;
+    container.appendChild(alertDiv); // Corrected variable name here
+ }
+ 
+ 
 
  // Setup and update the pie chart
  const pieCtx = document.getElementById('pieChartCanvas').getContext('2d');
