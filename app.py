@@ -141,13 +141,11 @@ def dashboard():
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    
-    # Fetch user information for initial GET request or keep after POST
-    with mysql.connection.cursor() as cursor:
+    alerts = []  # Initialize an empty list for alerts
 
+    with mysql.connection.cursor() as cursor:
         cursor.execute("SELECT * FROM user WHERE id=%s", (user_id,))
         user = cursor.fetchone()
-    
 
         cursor.execute("""SELECT value FROM historical_data 
                           WHERE type = 'electricity' 
@@ -155,36 +153,20 @@ def dashboard():
         electricity_data = cursor.fetchone()
         if electricity_data:
             current_electricity_usage = electricity_data[0]
+            if check_for_alerts(current_electricity_usage, user[4]): 
+                alerts.append("Electricity usage threshold exceeded.")
 
-        # Fetch the latest water usage
         cursor.execute("""SELECT value FROM historical_data 
                           WHERE type = 'water' 
                           ORDER BY time DESC LIMIT 1""")
         water_data = cursor.fetchone()
         if water_data:
             current_water_usage = water_data[0]
+            if check_for_alerts(current_water_usage, user[5]): 
+                alerts.append("Water usage threshold exceeded.")
 
-        # Fetch thresholds
-        cursor.execute("SELECT electricity_threshold, water_threshold FROM user WHERE id=%s", (user_id,))
-        thresholds = cursor.fetchone()
+    return render_template('dashboard.html', user=user, alerts=alerts, current_electricity_usage=current_electricity_usage, current_water_usage=current_water_usage)
 
-    # Check if thresholds are available and then for alerts
-    if thresholds:
-        electricity_threshold, water_threshold = thresholds
-        if current_electricity_usage is not None:
-             check_for_alerts(current_electricity_usage, electricity_threshold) 
-               
-            
-        if current_water_usage is not None:
-             check_for_alerts(current_water_usage, water_threshold) 
-              
-                 
-            
-    else:
-        flash("No thresholds set. Please configure your alert thresholds.")
-
-       
-    return render_template('dashboard.html', user=user,current_electricity_usage=current_electricity_usage, current_water_usage=current_water_usage)
 
 def generate_random_data_electricity():
     while True:
@@ -196,11 +178,13 @@ def generate_random_data_electricity():
         cursor.execute("INSERT INTO historical_data (type, value, time) VALUES (%s, %s, %s)", ('electricity', kWh, now))
         mysql.connection.commit()
         cursor.close()
+        alert_flag = check_for_alerts(kWh, electricity_alert_threshold)
         json_data = json.dumps({
             'time': now.strftime('%Y-%m-%d %H:%M:%S'),
             'value': kWh,
-            'alert': check_for_alerts(kWh, electricity_alert_threshold ),
+            'alert': alert_flag,
         })
+
         yield f"data:{json_data}\n\n"
         time.sleep(10)
 
@@ -215,10 +199,11 @@ def generate_random_data_water():
         cursor.execute("INSERT INTO historical_data (type, value, time) VALUES (%s, %s, %s)", ('water', liters, now))
         mysql.connection.commit()
         cursor.close()
+        alert_flag = check_for_alerts(liters, water_alert_threshold)
         json_data = json.dumps({
             'time': now.strftime('%Y-%m-%d %H:%M:%S'),
             'value': liters,
-            'alert': check_for_alerts(liters, water_alert_threshold),
+            'alert':alert_flag ,
         })
         yield f"data:{json_data}\n\n"
         time.sleep(10) #usually 1 min
