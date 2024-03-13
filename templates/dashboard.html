@@ -5,9 +5,6 @@
 <div>
     <aside>
         <!-- This content will be in side bar-->
-        {% for message in get_flashed_messages() %}
-        <div class="alert alert-info">{{ message }}</div>
-        {% endfor %}
       <h2>User Info</h2>
       {% if user %}
       <ul>
@@ -19,6 +16,14 @@
       </ul>
       {% endif %}
     </aside>
+
+    <div class="container">
+        <h1>Dashboard</h1>
+
+        <!-- Dashboard content goes here -->
+        <p>Welcome to your dashboard. Here you can view your electricity and water usage alerts.</p>
+    </div>
+    
     
     
     <div>
@@ -227,7 +232,11 @@ pieSource.onmessage = function (event) {
     pieChart.data.datasets[0].data = data.data;
     pieChart.update();
 };
+
+
+
 });
+
 
 
 </script>

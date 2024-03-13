@@ -15,6 +15,8 @@
             <input type="date" class="form-control" id="endDate" required>
         </div>
         <button type="submit" class="btn btn-primary">Submit</button>
+        <button onclick="downloadCSV()" class="btn btn-success">Download CSV</button>
+
         <br>
         <a href="/dashboard"> Back to Dashboard </a>
     </form>
@@ -24,6 +26,12 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
+    
+     function downloadCSV() {
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        window.location.href = `/download-csv?start_date=${startDate}&end_date=${endDate}`;
+    }
     document.getElementById('historyForm').addEventListener('submit', function(event) {
         event.preventDefault();
         const startDate = document.getElementById('startDate').value;
