@@ -21,26 +21,15 @@
     </aside>
     
     
+    <div>
+        <a href="/history">Historical data</a>
+    </div>
     
-    <!-- Display historical  data -->
-    <div class="container">
-        <h5>Historical data</h5>
-        <p>Pick Range :</p>
-        <form class="form-inline" action="/dashboard" method='post'>
-          <label for="start_date">Start Date:</label>
-          <input type="date" class="form-control" id="start_date" placeholder="Enter the starting date" name="start_date" required>
-          
-          <label for="end_date">End Date:</label>
-          <input type="date" class="form-control" id="end_date" placeholder="Enter the ending date" name="end_date" required>
-          
-          <button type="submit" class="btn btn-primary">Show History</button>
-        </form>
-      </div>
+      
 
       
     
     
-</div>
 <div class="container">
 <div class="row">
     <div class="col-12">
@@ -193,6 +182,7 @@ $(document).ready(function () {
     const data = JSON.parse(event.data);
     updateChartData(lineChart2, data);
  }
+ 
 
 
 
@@ -238,8 +228,6 @@ pieSource.onmessage = function (event) {
     pieChart.update();
 };
 });
-  
-
 
 
 </script>

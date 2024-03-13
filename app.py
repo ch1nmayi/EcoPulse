@@ -4,7 +4,7 @@ from flask_mysqldb import MySQL
 from flask_wtf import FlaskForm
 import random
 import time
-from flask import request
+from flask import request,jsonify
 from wtforms import StringField, PasswordField, SubmitField
 from wtforms.validators import DataRequired, Email, ValidationError
 import bcrypt
@@ -123,46 +123,25 @@ def logout():
     return redirect(url_for('login'))
 
 #Dash board routing 
-@app.route('/dashboard')
+@app.route('/dashboard', methods=['GET','POST'])
 def dashboard():
     if 'user_id' not in session:
         return redirect(url_for('login'))
 
     user_id = session['user_id']
-    electricity_data_formatted = []
-    water_data_formatted = []
-
-    if request.method == 'POST':
-        start_date = request.form['start_date']
-        end_date = request.form['end_date']
-
-        with mysql.connection.cursor() as cursor:
-            cursor.execute("""SELECT * FROM historical_data 
-                            WHERE user_id=%s AND type='electricity' 
-                            AND time BETWEEN %s AND %s
-                            ORDER BY time DESC""", (user_id, start_date, end_date))
-            electricity_data = cursor.fetchall()
-
-            cursor.execute("""SELECT * FROM historical_data 
-                            WHERE user_id=%s AND type='water' 
-                            AND time BETWEEN %s AND %s
-                            ORDER BY time DESC""", (user_id, start_date, end_date))
-            water_data = cursor.fetchall()
-
-            # Assuming indices: 0 - ID, 1 - user_id, 2 - value, 3 - data_type, 4 - timestamp
-            electricity_data_formatted = [{'time': row[4].strftime('%Y-%m-%d %H:%M:%S'), 'value': row[3]} for row in electricity_data]
-            water_data_formatted = [{'time': row[4].strftime('%Y-%m-%d %H:%M:%S'), 'value': row[3]} for row in water_data]
-
+    
     # Fetch user information for initial GET request or keep after POST
     with mysql.connection.cursor() as cursor:
         cursor.execute("SELECT * FROM user WHERE id=%s", (user_id,))
         user = cursor.fetchone()
 
-    return render_template('dashboard.html', user=user, electricity_data=electricity_data_formatted, water_data=water_data_formatted)
+    return render_template('dashboard.html', user=user,)
 
 def generate_random_data_electricity():
     while True:
-        kWh = 28 + random.random() * 4
+        #kWh = 4 + random.random() * 0.5 #For 5 min interval
+        kWh = 0.8 + (random.random() * 0.1)  # Simplified formula for 1-minute electricity consumption.
+
         now = datetime.now()
         cursor = mysql.connection.cursor()
         cursor.execute("INSERT INTO historical_data (type, value, time) VALUES (%s, %s, %s)", ('electricity', kWh, now))
@@ -174,12 +153,14 @@ def generate_random_data_electricity():
             'alert': check_for_alerts(kWh, alert_threshold),
         })
         yield f"data:{json_data}\n\n"
-        time.sleep(1)
+        time.sleep(60)
 
 
 def generate_random_data_water():
     while True:
-        liters = 300 + random.random() * 100
+        #liters = 25 + random.random() * 5 #for 5 min interval
+        liters = 5 + (random.random() * 1)  # Simplified formula for 1-minute water consumption.
+
         now = datetime.now()
         cursor = mysql.connection.cursor()
         cursor.execute("INSERT INTO historical_data (type, value, time) VALUES (%s, %s, %s)", ('water', liters, now))
@@ -191,9 +172,59 @@ def generate_random_data_water():
             'alert': check_for_alerts(liters, alert_threshold),
         })
         yield f"data:{json_data}\n\n"
-        time.sleep(1)
+        time.sleep(60)
 
 
+@app.route('/history', methods=['GET', 'POST'])
+def historical_data():
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+
+    # If it's a GET request, just render the form template.
+    if request.method == 'GET':
+        return render_template('history.html')
+
+    # For POST request, process the form data and fetch historical data.
+    if request.method == 'POST':
+        user_id = session['user_id']
+        # Ensure you're getting JSON data correctly.
+        data = request.get_json()
+        start_date = data['start_date']
+        end_date = data['end_date']
+
+        # Initialize response data structure
+        response_data = {
+            'electricity': {'labels': [], 'data': []},
+            'water': {'labels': [], 'data': []}
+        }
+
+        with mysql.connection.cursor() as cursor:
+            #fetching electricity data
+            cursor.execute("""SELECT time, value FROM historical_data 
+                            WHERE user_id=%s AND type='electricity' 
+                            AND time BETWEEN %s AND %s
+                            ORDER BY time DESC""", (user_id, start_date, end_date))
+            electricity_data = cursor.fetchall()
+
+            #fetching water data
+            cursor.execute("""SELECT time, value FROM historical_data 
+                            WHERE user_id=%s AND type='water' 
+                            AND time BETWEEN %s AND %s
+                            ORDER BY time DESC""", (user_id, start_date, end_date))
+            water_data = cursor.fetchall()
+
+        # Adjust date formatting as necessary
+        for row in electricity_data:
+            date_str = row[0].strftime('%Y-%m-%d') # Format date as string
+            response_data['electricity']['labels'].append(date_str)
+            response_data['electricity']['data'].append(row[1])
+
+        for row in water_data:
+            date_str = row[0].strftime('%Y-%m-%d') # Format date as string
+            response_data['water']['labels'].append(date_str)
+            response_data['water']['data'].append(row[1])
+
+        return jsonify(response_data)
 
 
 @app.route('/chart-data')

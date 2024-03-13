@@ -1,0 +1,89 @@
+
+{% extends 'app.html' %}
+{% block content %}
+
+
+<div class="container mt-5">
+    <h2>View Historical Usage</h2>
+    <form id="historyForm">
+        <div class="form-group">
+            <label for="startDate">Start Date:</label>
+            <input type="date" class="form-control" id="startDate" required>
+        </div>
+        <div class="form-group">
+            <label for="endDate">End Date:</label>
+            <input type="date" class="form-control" id="endDate" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+        <br>
+        <a href="/dashboard"> Back to Dashboard </a>
+    </form>
+
+    <canvas id="electricityChart" width="400" height="200"></canvas>
+    <canvas id="waterChart" width="400" height="200"></canvas>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.getElementById('historyForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+    
+        fetch('/history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ start_date: startDate, end_date: endDate }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Define unique colors for each chart
+            const electricityColors = {
+                backgroundColor: 'rgba(54, 162, 235, 0.2)', // blue
+                borderColor: 'rgba(54, 162, 235, 1)'
+            };
+            const waterColors = {
+                backgroundColor: 'rgba(75, 192, 192, 0.2)', // green
+                borderColor: 'rgba(75, 192, 192, 1)'
+            };
+    
+            // Update charts with specified colors
+            updateChart('electricityChart', 'Electricity Usage', data.electricity.labels, data.electricity.data, electricityColors.backgroundColor, electricityColors.borderColor);
+            updateChart('waterChart', 'Water Usage', data.water.labels, data.water.data, waterColors.backgroundColor, waterColors.borderColor);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+        });
+    });
+    
+    function updateChart(chartId, chartLabel, labels, data, backgroundColor, borderColor) {
+        const ctx = document.getElementById(chartId).getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: chartLabel,
+                    data: data,
+                    backgroundColor: backgroundColor,
+                    borderColor: borderColor,
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    }
+    </script>
+    
+
+
+{% endblock %}
+
+
