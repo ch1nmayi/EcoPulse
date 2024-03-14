@@ -2,75 +2,76 @@
 
 {% block content %}
 
-<div>
-    <aside>
-        <!-- This content will be in side bar-->
-      <h2>User Info</h2>
-      {% if user %}
-      <ul>
-        <li class="dropdown-item">Name: {{ user[1] }}</li>
-        <li class="dropdown-item">Email: {{ user[2] }}</li>
-        <a class="btn btn-primary" href="/logout" role="button">Log out</a>
-        <a class="btn btn-primary" href="/settings" role="button">settings</a>
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+            <div class="position-sticky pt-3">
+                <aside>
+                    <h2>User Info</h2>
+                    {% if user %}
+                    <ul class="nav flex-column">
+                        <li class="nav-item">Name: {{ user[1] }}</li>
+                        <li class="nav-item">Email: {{ user[2] }}</li>
+                        <a class="btn btn-primary mt-3" href="/logout" role="button">Log out</a>
+                        <a class="btn btn-primary mt-2" href="/settings" role="button">Settings</a>
+                    </ul>
+                    {% endif %}
+                </aside>
+            </div>
+        </div>
 
-      </ul>
-      {% endif %}
-    </aside>
+        <!-- Main Content -->
+        <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="pt-3 pb-2 mb-3 border-bottom">
+                <div id="alertsContainer"></div>
+                <a href="/history" class="btn btn-info mt-3">Historical data</a>
+            </div>
 
-    <div id="alertsContainer"></div>
-    
-    
-    
-    <div>
-        <a href="/history">Historical data</a>
-    </div>
-    
-      
-
-      
-    
-    
-<div class="container">
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <canvas id="canvas"></canvas>
+            <div class="row">
+                <div class="col-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <canvas id="canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <canvas id="canvas2"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <canvas id="pieChartCanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <canvas id="consumptionChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <canvas id="consumptionChart2"></canvas>
+                        </div>
+                    </div>
+                </div>
                 
             </div>
         </div>
     </div>
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <canvas id="canvas2"></canvas> <!-- New canvas for the second chart -->
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <canvas id="pieChartCanvas"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <canvas id="consumptionChart" width="400" height="400"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <canvas id="consumptionChart2" width="400" height="400"></canvas>
-            </div>
-        </div>
-    </div>
 </div>
-</div>
+<script src="https://code.jquery.com/jquery-3.6.0.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.min.js"></script>
 <!--suppress JSUnresolvedLibraryURL -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
 <!--suppress JSUnresolvedLibraryURL -->
@@ -228,21 +229,21 @@ $(document).ready(function () {
                         data: Object.values(data),
                         backgroundColor: [
                             // Define colors for each slice
-                            'rgba(255, 99, 132, 0.2)',
-                            'rgba(54, 162, 235, 0.2)',
-                            'rgba(255, 206, 86, 0.2)',
-                            'rgba(155, 93, 162, 0.2)',
-                            'rgba(34, 172, 285, 0.2)',
-                            'rgba(275, 56, 86, 0.2)',
-                        ],
+                            'rgba(102, 181, 255, 0.2)',
+                            'rgba(255, 133, 133, 0.2)', // Soft Coral
+                            'rgba(160, 216, 255, 0.2)', // Soft Light Blue
+                            'rgba(255, 183, 178, 0.2)', // Soft Peach
+                            'rgba(198, 255, 221, 0.2)', // Soft Mint
+                            'rgba(255, 218, 193, 0.2)', // Soft Apricot
+                    ],
                         borderColor: [
                             // Define border colors for each slice
-                            'rgba(255,99,132,1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(245,100,152,12)',
-                            'rgba(54, 152, 245, 41)',
-                            'rgba(265, 256, 36, 31)',
+                            'rgba(102, 181, 255, 1)', // Sky Blue
+                            'rgba(255, 133, 133, 1)', // Coral
+                            'rgba(160, 216, 255, 1)', // Light Blue
+                            'rgba(255, 183, 178, 1)', // Peach
+                            'rgba(198, 255, 221, 1)', // Mint
+                            'rgba(255, 218, 193, 1)', // Apricot
                             // Add more border colors for each category
                         ],
                         borderWidth: 1
@@ -266,24 +267,26 @@ $(document).ready(function () {
                         label: 'Water Consumption by Category',
                         data: Object.values(data),
                         backgroundColor: [
-                            // Define colors for each slice
-                            'rgba(255, 99, 132, 0.2)',
-                            'rgba(54, 162, 235, 0.2)',
-                            'rgba(255, 206, 86, 0.2)',
-                            'rgba(155, 93, 162, 0.2)',
-                            'rgba(34, 172, 285, 0.2)',
-                            'rgba(275, 56, 86, 0.2)',
-                        ],
+                             // Define colors for each slice
+                             'rgba(255, 99, 132, 0.2)', // Soft Red
+                             'rgba(54, 162, 235, 0.2)', // Soft Blue
+                             'rgba(255, 206, 86, 0.2)', // Soft Yellow
+                             'rgba(75, 192, 192, 0.2)', // Soft Green
+                             'rgba(153, 102, 255, 0.2)', // Soft Purple
+                             'rgba(255, 159, 64, 0.2)', // Soft Orange
+                            ],
+                            
                         borderColor: [
                             // Define border colors for each slice
-                            'rgba(255,99,132,1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(245,100,152,12)',
-                            'rgba(54, 152, 245, 41)',
-                            'rgba(265, 256, 36, 31)',
+                            'rgba(255,99,132,1)', // Red
+                            'rgba(54, 162, 235, 1)', // Blue
+                            'rgba(255, 206, 86, 1)', // Yellow
+                            'rgba(75, 192, 192, 1)', // Green
+                            'rgba(153, 102, 255, 1)', // Purple
+                            'rgba(255, 159, 64, 1)', // Orange
                             // Add more border colors for each category
                         ],
+                        
                         borderWidth: 1
                     }]
                 },

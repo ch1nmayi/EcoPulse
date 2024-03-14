@@ -1,26 +1,26 @@
 {% extends 'app.html' %}
 {% block content %}
 
-<div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
-  <header class="mb-auto">
-    <div>
-      <h3 class="float-md-start mb-0">Cover</h3>
+<div class="d-flex w-100 h-100 p-3 mx-auto flex-column" style="min-height: 100vh; background-color: #f5f5f5;">
+  <div class="container d-flex justify-content-center align-items-center" style="flex-grow: 1;">
+    <div class="card" style="width: auto; margin: 20px;">
+      <div class="card-body text-center">
+        
+
+        <main class="px-3 my-4 mt-2">
+          <h1>Resources Dashboard</h1>
+          <p class="lead">tag</p>
+          <p class="lead">
+            <a href="/login" class="btn btn-secondary mt-4">Login</a>
+            <a href="/register" class="btn btn-secondary mt-4">Register</a>
+          </p>
+        </main>
+
+        <footer class="mt-auto text-white-50">
+        </footer>
+      </div>
     </div>
-  </header>
-
-  <main class="px-3">
-    <h1>Resources DashBoard</h1>
-    <p class="lead">tag </p>
-    <p class="lead">
-      <a href="/login" class="btn btn-lg btn-light fw-bold border-white bg-white">Login</a>
-      <a href="/register" class="btn btn-lg btn-light fw-bold border-white bg-white">Register</a>
-
-    </p>
-  </main>
-
-  <footer class="mt-auto text-white-50">
-  </footer>
- </div>
-
+  </div>
+</div>
 
 {% endblock %}
