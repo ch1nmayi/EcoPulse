@@ -36,6 +36,7 @@
         <div class="card">
             <div class="card-body">
                 <canvas id="canvas"></canvas>
+                
             </div>
         </div>
     </div>
@@ -54,6 +55,20 @@
             </div>
         </div>
     </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <canvas id="consumptionChart" width="400" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <canvas id="consumptionChart2" width="400" height="400"></canvas>
+            </div>
+        </div>
+    </div>
 </div>
 </div>
 <!--suppress JSUnresolvedLibraryURL -->
@@ -62,7 +77,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
 <!--suppress JSUnresolvedLibraryURL -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     
 $(document).ready(function () {
@@ -185,8 +200,6 @@ $(document).ready(function () {
  }
  
 
-
-
  // Generic function to update chart data
  function updateChartData(chart, data) {
     if (chart.data.labels.length >= 20) {
@@ -201,6 +214,85 @@ $(document).ready(function () {
     });
     chart.update();
 
+
+    fetch('/Detailed_electricity_data')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('consumptionChart').getContext('2d');
+            const consumptionChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'Electricity Consumption by Category',
+                        data: Object.values(data),
+                        backgroundColor: [
+                            // Define colors for each slice
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(155, 93, 162, 0.2)',
+                            'rgba(34, 172, 285, 0.2)',
+                            'rgba(275, 56, 86, 0.2)',
+                        ],
+                        borderColor: [
+                            // Define border colors for each slice
+                            'rgba(255,99,132,1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(245,100,152,12)',
+                            'rgba(54, 152, 245, 41)',
+                            'rgba(265, 256, 36, 31)',
+                            // Add more border colors for each category
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                }
+            });
+        });
+
+        fetch('/Detailed_Water_data')
+        .then(response => response.json())
+        .then(data => {
+            const ctx = document.getElementById('consumptionChart2').getContext('2d');
+            const consumptionChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'Water Consumption by Category',
+                        data: Object.values(data),
+                        backgroundColor: [
+                            // Define colors for each slice
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(155, 93, 162, 0.2)',
+                            'rgba(34, 172, 285, 0.2)',
+                            'rgba(275, 56, 86, 0.2)',
+                        ],
+                        borderColor: [
+                            // Define border colors for each slice
+                            'rgba(255,99,132,1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(245,100,152,12)',
+                            'rgba(54, 152, 245, 41)',
+                            'rgba(265, 256, 36, 31)',
+                            // Add more border colors for each category
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                }
+            });
+        });
+
     if (data.alert) {
         displayAlert(data);
     }
@@ -211,13 +303,20 @@ $(document).ready(function () {
  function displayAlert(data) {
     console.log("Displaying alert with data:", data);
     const container = document.getElementById('alertsContainer');
+    container.innerHTML = ''; // This line clears any existing content in the alertsContainer.
     const alertDiv = document.createElement('div');
     alertDiv.classList.add('alert', 'alert-warning'); // Added alert-warning for Bootstrap styling
     alertDiv.innerText = `Alert at ${data.time}: High ${data.label} usage detected!`;
     container.appendChild(alertDiv); // Corrected variable name here
  }
  
- 
+ source.onmessage = function (event) {
+    console.log(event.data); // Log the raw data received
+    const data = JSON.parse(event.data);
+    console.log(data); // Log the parsed data to check for the 'label' property
+    updateChartData(lineChart, data);
+}
+
 
  // Setup and update the pie chart
  const pieCtx = document.getElementById('pieChartCanvas').getContext('2d');

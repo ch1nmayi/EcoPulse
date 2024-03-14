@@ -42,9 +42,9 @@ mysql = MySQL(app)
 
 #for setting threshold and alert 
 electricity_data = []
-electricity_alert_threshold = 2  # threshold for alert
-alert_duration = 15  # Seconds
-water_alert_threshold =  15#  threshold for water
+electricity_alert_threshold = 300  # threshold for alert
+alert_duration = 20 # Seconds
+water_alert_threshold = 3000 # threshold for water
 last_alert_time = None
 
 def check_for_alerts(current_value, threshold):
@@ -170,8 +170,8 @@ def dashboard():
 
 def generate_random_data_electricity():
     while True:
-        #kWh = 4 + random.random() * 0.5 #For 5 min interval
-        kWh = 0.8 + (random.random() * 0.1)  # Simplified formula for 1-minute electricity consumption.
+        
+        kWh = 216 + (random.random() * 1.1)  # the revised equation for daily kWh consumption might look like this
 
         now = datetime.now()
         cursor = mysql.connection.cursor()
@@ -180,19 +180,20 @@ def generate_random_data_electricity():
         cursor.close()
         alert_flag = check_for_alerts(kWh, electricity_alert_threshold)
         json_data = json.dumps({
+            'label': 'Electricity',
             'time': now.strftime('%Y-%m-%d %H:%M:%S'),
             'value': kWh,
             'alert': alert_flag,
         })
 
         yield f"data:{json_data}\n\n"
-        time.sleep(10)
+        time.sleep(10) #every 10 or whatever seconds we set her will be == 1 day 
 
 
 def generate_random_data_water():
     while True:
-        #liters = 25 + random.random() * 5 #for 5 min interval
-        liters = 5 + (random.random() * 1)  # Simplified formula for 1-minute water consumption.
+       
+        liters = 8670 + (random.random() * 100) # Simplified formula for 1-minute water consumption.
 
         now = datetime.now()
         cursor = mysql.connection.cursor()
@@ -201,12 +202,13 @@ def generate_random_data_water():
         cursor.close()
         alert_flag = check_for_alerts(liters, water_alert_threshold)
         json_data = json.dumps({
+            'label': 'Water',
             'time': now.strftime('%Y-%m-%d %H:%M:%S'),
             'value': liters,
             'alert':alert_flag ,
         })
         yield f"data:{json_data}\n\n"
-        time.sleep(10) #usually 1 min
+        time.sleep(10) #every 10 or whatever seconds we set her will be == 1 day 
 
 
 
@@ -339,6 +341,63 @@ def settings():
     thresholds = cursor.fetchone()
     cursor.close()
     return render_template('settings.html', thresholds=thresholds)
+
+
+# Adding a new Route for detailed view for electrical consumption 
+@app.route('/Detailed_electricity_data')
+def Detailed_electricity_data():
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT value FROM historical_data WHERE type='electricity' ORDER BY time DESC LIMIT 1")
+    row = cursor.fetchone()
+    cursor.close()
+    
+    if row:
+        kWh_daily = row[0]
+    else:
+        # If no data found, use a default or throw an error
+        #kWh_daily = 216 
+        pass
+
+    distribution = {
+        "Lighting": 0.30,
+        "HVAC": 0.34,
+        "Office Equipment": 0.20,
+        "Water Heating & Refridgeration": 0.15,
+        "Elevators and Escalators": 0.20,
+        "Other Electrical Systems": 0.05
+    }
+
+    detailed_consumption = {category: kWh_daily * percentage for category, percentage in distribution.items()}
+    return jsonify(detailed_consumption)
+
+
+@app.route('/Detailed_Water_data')
+def Detailed_Water_data():
+    cursor = mysql.connection.cursor()
+    cursor.execute("SELECT value FROM historical_data WHERE type='water' ORDER BY time DESC LIMIT 1")
+    row = cursor.fetchone()
+    cursor.close()
+    
+    if row:
+        liters_daily = row[0]
+    else:
+        # If no data found, use a default or throw an error
+        #kWh_daily = 216 
+        pass
+
+    distribution = {
+        "Restrooms": 0.40,
+        "HVAC": 0.30,
+        "landScaping and irrigation": 0.20,
+        "Kitchen & Food Service": 0.05,
+        "cleaning and maintainance ": 0.10,
+        "Drinking Water and Office Use": 0.02,
+    }
+
+    detailed_consumption = {category: liters_daily * percentage for category, percentage in distribution.items()}
+    return jsonify(detailed_consumption)
+
+
 
 
 if __name__ == '__main__':
