@@ -142,6 +142,9 @@ def dashboard():
 
     user_id = session['user_id']
     alerts = []  # Initialize an empty list for alerts
+    current_electricity_usage = 0
+    current_water_usage = 0
+
 
     with mysql.connection.cursor() as cursor:
         cursor.execute("SELECT * FROM user WHERE id=%s", (user_id,))
@@ -171,7 +174,13 @@ def dashboard():
 def generate_random_data_electricity():
     while True:
         
-        kWh = 216 + (random.random() * 1.1)  # the revised equation for daily kWh consumption might look like this
+        kWh = 216 + (random.random() * 1.5)  # the revised equation for daily kWh consumption might look like this
+        electricity_anomaly_factor = 10  # Simulating a day with 10x normal usage
+
+        # Applying anomaly under certain conditions
+        # Let's assume the anomaly happens with a 10% chance
+        if random.random() < 0.3:
+            kWh *= electricity_anomaly_factor
 
         now = datetime.now()
         cursor = mysql.connection.cursor()
@@ -194,6 +203,9 @@ def generate_random_data_water():
     while True:
        
         liters = 8670 + (random.random() * 100) # Simplified formula for 1-minute water consumption.
+        water_anomaly_factor = 2  # Doubling the normal usage due to a leak
+        if random.random() < 0.3:
+            liters *= water_anomaly_factor
 
         now = datetime.now()
         cursor = mysql.connection.cursor()
@@ -312,8 +324,8 @@ def pie_chart_data():
         while True:
             json_data = json.dumps({
                 'data': [
-                    28 + random.random() * 4,  # Electricity
-                    300 + random.random() * 100,  # Water
+                    216 + random.random() * 1.5,  # Electricity
+                    8670 + random.random() * 100,  # Water
                    
                 ]
             })
@@ -328,21 +340,27 @@ def settings():
         return redirect(url_for('login'))
     user_id = session['user_id']
     cursor = mysql.connection.cursor()
+    
     if request.method == 'POST':
         electricity_threshold = request.form['electricity_threshold']
         water_threshold = request.form['water_threshold']
         
+        # Execute the update query
         cursor.execute("""UPDATE user SET electricity_threshold=%s, water_threshold=%s WHERE id=%s""",
                        (electricity_threshold, water_threshold, user_id))
         mysql.connection.commit()
-        flash('Threshold settings updated successfully.')
-        return redirect(url_for('dashboard'))
+        
+        # Close the cursor after committing your changes
+        cursor.close()
+        
+        # Since this is an AJAX request, you return a JSON response
+        return jsonify({'success': True, 'message': 'Threshold settings updated successfully.'})
+    
+    # For GET requests, fetch the current settings and render the template as before
     cursor.execute("SELECT electricity_threshold, water_threshold FROM user WHERE id=%s", (user_id,))
     thresholds = cursor.fetchone()
     cursor.close()
     return render_template('settings.html', thresholds=thresholds)
-
-
 # Adding a new Route for detailed view for electrical consumption 
 @app.route('/Detailed_electricity_data')
 def Detailed_electricity_data():
