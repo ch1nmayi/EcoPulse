@@ -4,15 +4,19 @@
 
 <div class="container-fluid">
     <div class="row">
+        <div class="col-12 text-center">
+            <img src="static\logo-no-background.png" alt="Logo" style="max-height: 100px;"> <!-- Adjust the path and styling as needed -->
+        </div>
+    </div>
+    <div class="row">
         <!-- Sidebar -->
-        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+        <div class="col-md-3 col-lg-2 d-md-block bg-light sidebar ">
             <div class="position-sticky pt-3">
                 <aside>
-                    <h2>User Info</h2>
                     {% if user %}
                     <ul class="nav flex-column">
-                        <li class="nav-item">Name: {{ user[1] }}</li>
-                        <li class="nav-item">Email: {{ user[2] }}</li>
+                        <li class="nav-item text-primary">Name: {{ user[1] }}</li>
+                        <li class="nav-item text-secondary">Email: {{ user[2] }}</li>
                         <a class="btn btn-primary mt-3" href="/logout" role="button">Log out</a>
                         <a class="btn btn-primary mt-2" href="/settings" role="button">Settings</a>
                     </ul>
@@ -23,6 +27,7 @@
 
         <!-- Main Content -->
         <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            
             <div class="pt-3 pb-2 mb-3 border-bottom">
                 <div id="alertsContainer"></div>
                 <a href="/history" class="btn btn-info mt-3">Historical data</a>
@@ -34,36 +39,44 @@
                 <div class="col-12 mb-4">
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <canvas id="canvas"></canvas>
+                            <h4 class="nav-item text-primary" > Real Time Electricity Usage </h4>
+                            <canvas  class   id="canvas"></canvas>
                         </div>
                     </div>
                 </div>
                 <div class="col-12 mb-4">
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <canvas id="canvas2"></canvas>
+                            <h4 class="nav-item text-primary"> Real Time Water Usage </h4>
+                            <canvas class="fixed-size-canvas" id="canvas2"></canvas>
                         </div>
                     </div>
                 </div>
                 <div class="col-12 mb-4">
                     <div class="card shadow-sm">
-                        <div class="card-body">
+                        <div class="chart-container" style="width: 400px; height: 400px;">
                             <canvas id="pieChartCanvas"></canvas>
                         </div>
                     </div>
                 </div>
                 <div class="col-12 mb-4">
                     <div class="card shadow-sm">
-                        <div class="card-body">
+                        
+                        <div class="chart-container" style="width: 400px; height: 400px;">
+                            <h4 class="nav-item text-secondary"> Consumption Chart : Electricity </h4>
                             <canvas id="consumptionChart"></canvas>
                         </div>
+                                                    
                     </div>
                 </div>
                 <div class="col-12 mb-4">
                     <div class="card shadow-sm">
-                        <div class="card-body">
+                        
+                        <div class="chart-container" style="width: 400px; height: 400px;">
+                            <h4 class="nav-item text-secondary"> Consumption Chart : Water </h4>
                             <canvas id="consumptionChart2"></canvas>
                         </div>
+                        
                     </div>
                 </div>
                 
@@ -84,9 +97,9 @@ $(document).ready(function () {
         data: {
             labels: [],
             datasets: [{
-                label: "Electricity",
-                backgroundColor: 'rgb(255, 99, 132)',
-                borderColor: 'rgb(255, 99, 132)',
+                label: "Electricity Usage ",
+                backgroundColor: 'rgba(255, 107, 107, 1)',
+                borderColor: 'rgba(255, 107, 107, 1)',
                 data: [],
                 fill: false,
             }],
@@ -95,7 +108,7 @@ $(document).ready(function () {
             responsive: true,
             title: {
                 display: true,
-                text: 'Creating Real-Time Charts with Flask'
+                text: ' Real-Time Charts'
             },
             tooltips: {
                 mode: 'index',
@@ -129,9 +142,9 @@ $(document).ready(function () {
         data: {
             labels: [],
             datasets: [{
-                label: "Water",
-                backgroundColor: 'rgb(54, 162, 235)',
-                borderColor: 'rgb(54, 162, 235)',
+                label: "Water Usage",
+                backgroundColor: 'rgba(77, 137, 255, 1)',
+                borderColor: 'rgba(77, 137, 255, 1)',
                 data: [],
                 fill: false,
             }],
@@ -140,7 +153,7 @@ $(document).ready(function () {
             responsive: true,
             title: {
                 display: true,
-                text: 'Creating Real-Time Charts with Flask'
+                text: 'Real-Time Chart'
             },
             tooltips: {
                 mode: 'index',
@@ -225,27 +238,27 @@ $(document).ready(function () {
                         data: Object.values(data),
                         backgroundColor: [
                             // Define colors for each slice
-                            'rgba(255, 99, 132, 0.2)',
-                            'rgba(54, 162, 235, 0.2)',
-                            'rgba(255, 206, 86, 0.2)',
-                            'rgba(155, 93, 162, 0.2)',
-                            'rgba(34, 172, 285, 0.2)',
-                            'rgba(275, 56, 86, 0.2)',
+                            'rgba(71, 26, 160, 0.8)',
+                            'rgba(82, 6, 144, 0.8)',
+                            'rgba(255, 153, 0, 0.8)',
+                            'rgba(233, 30, 99, 0.8)',
+                            'rgba(156, 39, 176, 0.8)',
+                            'rgba(255, 235, 59, 0.8)',
                         ],
                         borderColor: [
                             // Define border colors for each slice
-                            'rgba(255,99,132,1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(245,100,152,12)',
-                            'rgba(54, 152, 245, 41)',
-                            'rgba(265, 256, 36, 31)',
-                            // Add more border colors for each category
+                            'rgba(71, 26, 160, 0.8)',
+                            'rgba(82, 6, 144, 0.8)',
+                            'rgba(255, 153, 0, 0.8)',
+                            'rgba(233, 30, 99, 0.8)',
+                            'rgba(156, 39, 176, 0.8)',
+                            'rgba(255, 235, 59, 0.8)',
                         ],
                         borderWidth: 1
                     }]
                 },
                 options: {
+                    maintainAspectRatio: false,
                     responsive: true,
                 }
             });
@@ -263,28 +276,28 @@ $(document).ready(function () {
                         label: 'Water Consumption by Category',
                         data: Object.values(data),
                         backgroundColor: [
-                            // Define colors for each slice
-                            'rgba(255, 99, 132, 0.2)',
-                            'rgba(54, 162, 235, 0.2)',
-                            'rgba(255, 206, 86, 0.2)',
-                            'rgba(155, 93, 162, 0.2)',
-                            'rgba(34, 172, 285, 0.2)',
-                            'rgba(275, 56, 86, 0.2)',
+                            'rgba(0, 150, 136, 0.8)',    // Teal
+                            'rgba(76, 175, 80, 0.8)',    // Green
+                            'rgba(139, 195, 74, 0.8)',   // Light Green
+                            'rgba(205, 220, 57, 0.8)',   // Lime
+                            'rgba(255, 235, 59, 0.8)',   // Yellow
+                            'rgba(255, 193, 7, 0.8)',    // Amber
+                            'rgba(255, 152, 0, 0.8)'// Orange
                         ],
                         borderColor: [
-                            // Define border colors for each slice
-                            'rgba(255,99,132,1)',
-                            'rgba(54, 162, 235, 1)',
-                            'rgba(255, 206, 86, 1)',
-                            'rgba(245,100,152,12)',
-                            'rgba(54, 152, 245, 41)',
-                            'rgba(265, 256, 36, 31)',
-                            // Add more border colors for each category
+                            'rgba(0, 150, 136, 0.8)',    // Teal
+                            'rgba(76, 175, 80, 0.8)',    // Green
+                            'rgba(139, 195, 74, 0.8)',   // Light Green
+                            'rgba(205, 220, 57, 0.8)',   // Lime
+                            'rgba(255, 235, 59, 0.8)',   // Yellow
+                            'rgba(255, 193, 7, 0.8)',    // Amber
+                            'rgba(255, 152, 0, 0.8)'// Orange
                         ],
                         borderWidth: 1
                     }]
                 },
                 options: {
+                    maintainAspectRatio: false,
                     responsive: true,
                 }
             });
@@ -322,11 +335,12 @@ $(document).ready(function () {
     data: {
         labels: ['Electricity', 'Water'],
         datasets: [{
-            backgroundColor: ['rgb(255, 99, 132)', 'rgb(54, 162, 235)'],
+            backgroundColor: ['rgba(255, 107, 107, 1)', 'rgba(77, 137, 255, 1)'],
             data: [0, 0] // Initial data
         }]
     },
     options: {
+        maintainAspectRatio: false,
         responsive: true,
         title: {
             display: true,
