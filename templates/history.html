@@ -27,6 +27,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     
+    
      function downloadCSV() {
         const startDate = document.getElementById('startDate').value;
         const endDate = document.getElementById('endDate').value;
@@ -66,28 +67,83 @@
     });
     
     function updateChart(chartId, chartLabel, labels, data, backgroundColor, borderColor) {
-        const ctx = document.getElementById(chartId).getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: chartLabel,
-                    data: data,
-                    backgroundColor: backgroundColor,
-                    borderColor: borderColor,
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
+    // Calculate the interval to sample 10 data points evenly
+    const sampleInterval = Math.floor(labels.length / 10);
+    let sampledLabels = [];
+    let sampledData = [];
+
+    // Sample 10 points from the original dataset
+    for (let i = 0; i < labels.length; i += sampleInterval) {
+        sampledLabels.push(labels[i]);
+        sampledData.push(data[i]);
+        // Ensure only up to 10 data points are added
+        if (sampledLabels.length >= 10) break;
+    }
+
+    const ctx = document.getElementById(chartId).getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: sampledLabels,
+            datasets: [{
+                label: chartLabel,
+                data: sampledData,
+                backgroundColor: backgroundColor,
+                borderColor: borderColor,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
                 }
             }
+        }
+    });
+}
+
+function initDashboard() {
+    // Make sure your form submission handler is attached
+    document.getElementById('historyForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+    
+        fetch('/history', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ start_date: startDate, end_date: endDate }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            const electricityColors = {
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)'
+            };
+            const waterColors = {
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                borderColor: 'rgba(75, 192, 192, 1)'
+            };
+    
+            updateChart('electricityChart', 'Electricity Usage', data.electricity.labels, data.electricity.data, electricityColors.backgroundColor, electricityColors.borderColor);
+            updateChart('waterChart', 'Water Usage', data.water.labels, data.water.data, waterColors.backgroundColor, waterColors.borderColor);
+        })
+        .catch((error) => {
+            console.error('Error:', error);
         });
-    }
+    });
+
+    // Optionally, clear previous charts or reset form/UI state if needed
+    // This part depends on how you wish to handle returning to the dashboard
+}
+
+// Call initDashboard on page load or when dashboard becomes visible
+window.addEventListener('load', initDashboard);
+
+
     </script>
     
 

@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container">
     <h2>Settings</h2>
-    <form method="POST">
+    <form id="settingsForm">
         <div class="form-group">
             <label for="electricity_threshold">Electricity Threshold:</label>
             <input type="number" class="form-control" name="electricity_threshold" value="{{ thresholds[0] }}">
@@ -13,7 +13,29 @@
             <input type="number" class="form-control" name="water_threshold" value="{{ thresholds[1] }}">
         </div>
         
-        <button type="submit" class="btn btn-primary">Update Thresholds</button>
+        <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 </div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+$(document).ready(function() {
+    $('#settingsForm').on('submit', function(e) {
+        e.preventDefault(); // Prevent the default form submission
+        $.ajax({
+    type: "POST",
+    url: "/settings",
+    data: $("#settingsForm").serialize(),
+    success: function(response) {
+        alert(response.message); // Optional: alert the user
+        window.location.href = "/dashboard"; // Redirect to the dashboard
+    },
+    error: function(xhr, status, error) {
+        // Handle errors
+    }
+});
+
+    });
+});
+</script>
 {% endblock %}
