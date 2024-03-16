@@ -23,7 +23,97 @@ import bcrypt
 import csv
 from io import StringIO
 
+faq_data = [
+        {
+            "tag": "greeting",
+            "patterns": ["Hi", "Hello", "How are you?"],
+            "responses": ["Hello!", "Hi there!", "Hello, how can I assist you?"]
+        },
+        {
+            "tag": "goodbye",
+            "patterns": ["Bye", "See you later", "Goodbye"],
+            "responses": ["Goodbye!", "See you later!", "Bye! Have a great day!"]
+        },
+        {
+            "tag": "monitor_resources",
+            "patterns": ["What resources can you monitor?", "Which resources are monitored by the system?", "Tell me about resource monitoring."],
+            "responses": ["Our system can monitor essential resources such as water and electricity usage.", "We monitor resources like water and electricity consumption.", "We keep track of water and electricity usage among others."]
+        },
 
+        {
+                "tag": "resource_filters",
+                "patterns": ["How can I filter resource data?", "Tell me about resource data filtering.", "Can I filter resource information?"],
+                "responses": ["You can filter resource data by specifying dates or types of resources.", "Our system allows you to filter resource data based on dates or specific resource types.", "You have the option to filter resource data by date range or resource category."]
+        },
+        {
+                "tag": "resource_usage",
+                "patterns": ["How can I check where certain resources are used more?", "Can I see which resources are consumed the most?", "Tell me about resource usage analysis."],
+                "responses": ["Our system provides insights into where certain resources are used more frequently.", "You can analyze resource consumption patterns to see where certain resources are utilized most.", "We offer resource usage analytics to identify areas where certain resources are used more intensively."]
+        },
+        {   
+                 "tag": "resource_alerts",
+                 "patterns": ["Do you provide alerts for resource overuse?", "How can I get alerts for resource consumption?", "Tell me about resource overuse notifications."],
+                 "responses": ["We offer alerts to notify you about resource overuse.", "You'll receive notifications when there's excessive consumption of resources.", "Our system alerts you when resource usage surpasses certain thresholds."]
+
+        },
+        {
+            "tag": "blogs",
+            "patterns": ["Do you have any blogs?", "Where can I find blogs on your platform?", "Tell me about your blogs."],
+            "responses": ["Yes, we have blogs covering various topics related to resource management and conservation.", "You can find informative blogs on our platform covering a wide range of topics.", "Explore our blog section for insightful articles on resource management and related subjects."]
+        },
+        {
+            "tag": "helpline_numbers",
+            "patterns": ["Can I get helpline numbers?", "Where can I find helpline numbers?", "Tell me about the helpline support."],
+            "responses": ["We provide helpline numbers for assistance with any issues or queries you may have.", "You can access helpline numbers for immediate support and assistance.", "Our helpline support is available to address your concerns and provide guidance."]
+        },
+        {
+            "tag": "contacts",
+            "patterns": ["How can I contact support?", "Where can I find contact information?", "Tell me about contacting support."],
+            "responses": ["You can contact our support team through the provided contact information.", "Reach out to our support team via the contact details available on our platform.", "Contacting support is easy, just use the provided contact information."]
+        },
+        {
+            "tag": "resource_data_specific_date",
+            "patterns": ["How can I find data for a specific date?", "Can I access resource data for a particular day?", "Tell me about finding data for a specific date."],
+            "responses": ["You can retrieve resource data for a specific date by specifying the date in the search criteria.", "Specify the date you're interested in to access resource data for that particular day.", "Use our search feature to find resource data for any specific date."]
+        },
+        {
+            "tag": "resource_data_type",
+            "patterns": ["How can I find data for a specific resource type?", "Can I filter data by resource category?", "Tell me about accessing data for a particular resource type."],
+            "responses": ["You can filter resource data by specifying the type of resource you're interested in.", "Select the resource category you want to analyze to access relevant data.", "Our system allows you to filter data based on resource types for detailed analysis."]
+        },
+        {
+            "tag": "resource_usage_insights",
+            "patterns": ["How can I get insights into resource usage?", "Can I analyze resource consumption patterns?", "Tell me about resource usage insights."],
+            "responses": ["Our system provides detailed insights into resource usage patterns for informed decision-making.", "Analyze resource consumption trends to gain valuable insights into usage patterns.", "Explore resource usage insights to optimize resource management strategies."]
+        },
+        {
+            "tag": "alert_thresholds",
+            "patterns": ["Can I customize alert thresholds?", "How flexible are the alert settings?", "Tell me about setting alert thresholds."],
+            "responses": ["You have the flexibility to customize alert thresholds based on your specific requirements.", "Customize alert thresholds to suit your resource management goals and preferences.", "Our system allows you to set personalized alert thresholds according to your needs."]
+        },
+        {
+            "tag": "blog_topics",
+            "patterns": ["What topics are covered in your blogs?", "Can you provide examples of blog topics?", "Tell me about the subjects of your blogs."],
+            "responses": ["Our blogs cover a wide range of topics including resource conservation techniques, sustainable practices, industry insights, and more.", "Explore blogs on topics such as energy efficiency, water conservation, sustainability initiatives, and technological advancements in resource management.", "Discover informative blogs covering topics like environmental conservation, renewable energy, waste management, and much more."]
+        },
+        {
+            "tag": "helpline_support_hours",
+            "patterns": ["When is helpline support available?", "What are the helpline support hours?", "Tell me about the availability of helpline support."],
+            "responses": ["Helpline support is available during our operating hours for immediate assistance.", "Our helpline support is accessible during business hours to address your queries and concerns.", "You can reach out to helpline support during our specified support hours for prompt assistance."]
+        },
+        {
+            "tag": "contact_methods",
+            "patterns": ["How can I contact support?", "What are the available contact methods?", "Tell me about the ways to contact support."],
+            "responses": ["You can contact support via email, phone, or through our online chat system.", "Reach out to support through email, phone, or by initiating a chat session on our platform.", "Contact support using any of the available methods including email, phone, or live chat."]
+        },
+        {
+            "tag": "resource_data_date_range",
+            "patterns": ["Can I view resource data for a specific date range?", "How do I access data for a period of time?", "Tell me about accessing data for a date range."],
+            "responses": ["Specify the date range you're interested in to view resource data over that period.", "You can access resource data for a specific date range by providing the start and end dates in the search criteria.", "Our system allows you to analyze resource data within a specified date range for comprehensive insights."]
+        }
+ 
+            # Add more FAQ data here
+        ]
 
 app = Flask(__name__)
 
@@ -414,6 +504,29 @@ def Detailed_Water_data():
 
     detailed_consumption = {category: liters_daily * percentage for category, percentage in distribution.items()}
     return jsonify(detailed_consumption)
+
+@app.route("/eco")
+def eco():
+    return render_template("eco.html")
+
+@app.route("/get_response" ,methods=['POST'])
+def get_response():
+    message = request.form.get("message")
+    if not message or not message.strip():
+        return "Please enter a message"
+ 
+    response = generate_response(message)
+    return response
+
+def generate_response(message):
+    found_response = False
+    for faq_item in faq_data:
+        for pattern in faq_item["patterns"]:
+            if pattern.lower() in message.lower():
+                found_response = True
+                return random.choice(faq_item["responses"])
+    if not found_response:
+        return "I'm sorry, I don't have an answer to that question."
 
 
 
